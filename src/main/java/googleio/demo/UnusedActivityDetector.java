@@ -1,6 +1,7 @@
 package googleio.demo;
 
 import com.android.annotations.NonNull;
+import com.android.annotations.Nullable;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Detector;
@@ -19,6 +20,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -44,6 +46,9 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
             Severity.WARNING,
             IMPLEMENTATION);
 
+    private static final int NUM_OF_ACTIVITIES = 100; //may be increase the number?
+    private static final String START_ACTIVITY = "startActivity";
+    private static final String START_ACTIVITY_FOR_RESULT = "startActivityForResult";
     private Set<String> mDeclarations;
     private Set<String> mReferences;
     private Map<String, Location> mUnused;
@@ -62,9 +67,23 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
     @Override
     public void beforeCheckProject(@NonNull Context context) {
         if (context.getPhase() == 1) {
-            mDeclarations = new HashSet<String>(300);
-            mReferences = new HashSet<String>(300);
+            mDeclarations = new HashSet<String>(NUM_OF_ACTIVITIES);
+            mReferences = new HashSet<String>(NUM_OF_ACTIVITIES);
         }
+    }
+
+    @Nullable
+    @Override
+    public List<String> getApplicableMethodNames() {
+        List<String> list = Collections.singletonList(START_ACTIVITY);
+        list.add(START_ACTIVITY_FOR_RESULT);
+        return list;
+    }
+
+    @Override
+    public void beforeCheckFile(@NonNull Context context) {
+        File file = context.file;
+//        boolean isJavaFile = LintUtils.isXmlFile()
     }
 
     @Override
