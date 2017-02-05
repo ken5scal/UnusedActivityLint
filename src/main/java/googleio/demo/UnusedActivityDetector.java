@@ -7,6 +7,7 @@ import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
+import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.ResourceXmlDetector;
 import com.android.tools.lint.detector.api.Scope;
@@ -24,7 +25,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import lombok.ast.AstVisitor;
+import lombok.ast.MethodInvocation;
+
 import static com.android.SdkConstants.TAG_ACTIVITY;
+import static com.android.tools.lint.client.api.JavaParser.ResolvedMethod;
+import static com.android.tools.lint.client.api.JavaParser.ResolvedNode;
+
 
 /**
  * Checks for an activity that has never called
@@ -49,6 +56,10 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
     private static final int NUM_OF_ACTIVITIES = 100; //may be increase the number?
     private static final String START_ACTIVITY = "startActivity";
     private static final String START_ACTIVITY_FOR_RESULT = "startActivityForResult";
+    private static final String START_ACTIVITY_FROM_CHILD ="startActivityFromChild";
+    private static final String START_ACTIVITY_FROM_FRAGMENT = "startActivityFromFragment";
+    private static final String START_ACTIVITY_IF_NEEDED = "startActivityIfNeeded";
+    private static final String ACTIVITY = "android.app.Activity";
     private Set<String> mDeclarations;
     private Set<String> mReferences;
     private Map<String, Location> mUnused;
@@ -77,7 +88,26 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
     public List<String> getApplicableMethodNames() {
         List<String> list = Collections.singletonList(START_ACTIVITY);
         list.add(START_ACTIVITY_FOR_RESULT);
+        list.add(START_ACTIVITY_FROM_CHILD);
+        list.add(START_ACTIVITY_FROM_FRAGMENT);
+        list.add(START_ACTIVITY_IF_NEEDED);
         return list;
+    }
+
+    @Override
+    public void visitMethod(@NonNull JavaContext context, @Nullable AstVisitor visitor, @NonNull MethodInvocation node) {
+        // Ignore if the method doesn't fit our description.
+        ResolvedNode resolved = context.resolve(node);
+        if (!(resolved instanceof ResolvedMethod)) {
+            return;
+        }
+        ResolvedMethod method = (ResolvedMethod) resolved;
+        if (!method.getContainingClass().isSubclassOf(ACTIVITY, false)) {
+            return;
+        }
+
+        String message = "`Activity.startActivity*` was found";
+        context.report(ISSUE, node, context.getLocation(node.astName()), message);
     }
 
     @Override
