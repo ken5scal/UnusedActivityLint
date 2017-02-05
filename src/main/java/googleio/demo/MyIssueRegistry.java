@@ -13,7 +13,7 @@ public class MyIssueRegistry extends IssueRegistry {
     @Override
     public List<Issue> getIssues() {
         return Collections.singletonList(
-                MyDetector.ISSUE
+                UnusedActivityDetector.ISSUE
         );
     }
 
