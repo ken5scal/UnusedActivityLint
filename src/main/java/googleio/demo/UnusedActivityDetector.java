@@ -18,6 +18,7 @@ import java.io.File;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -56,6 +57,14 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
     @Override
     public boolean appliesTo(@NonNull Context context, @NonNull File file) {
         return true;
+    }
+
+    @Override
+    public void beforeCheckProject(@NonNull Context context) {
+        if (context.getPhase() == 1) {
+            mDeclarations = new HashSet<String>(300);
+            mReferences = new HashSet<String>(300);
+        }
     }
 
     @Override
