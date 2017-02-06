@@ -2,6 +2,7 @@ package googleio.demo;
 
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
+import com.android.tools.lint.client.api.JavaEvaluator;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Detector;
@@ -13,6 +14,9 @@ import com.android.tools.lint.detector.api.ResourceXmlDetector;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
+import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiMethodCallExpression;
 
 import org.w3c.dom.Element;
 
@@ -25,19 +29,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import lombok.ast.AstVisitor;
-import lombok.ast.MethodInvocation;
-
 import static com.android.SdkConstants.TAG_ACTIVITY;
-import static com.android.tools.lint.client.api.JavaParser.ResolvedMethod;
-import static com.android.tools.lint.client.api.JavaParser.ResolvedNode;
 
 
 /**
  * Checks for an activity that has never called
  *
  */
-public class UnusedActivityDetector extends ResourceXmlDetector implements  Detector.JavaScanner {
+public class UnusedActivityDetector extends ResourceXmlDetector implements Detector.JavaPsiScanner {
 
     private static final Implementation IMPLEMENTATION = new Implementation(
             UnusedActivityDetector.class,
@@ -87,27 +86,21 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements  Dete
     @Override
     public List<String> getApplicableMethodNames() {
         List<String> list = Collections.singletonList(START_ACTIVITY);
-        list.add(START_ACTIVITY_FOR_RESULT);
-        list.add(START_ACTIVITY_FROM_CHILD);
-        list.add(START_ACTIVITY_FROM_FRAGMENT);
-        list.add(START_ACTIVITY_IF_NEEDED);
+//        list.add(START_ACTIVITY_FOR_RESULT);
+//        list.add(START_ACTIVITY_FROM_CHILD);
+//        list.add(START_ACTIVITY_FROM_FRAGMENT);
+//        list.add(START_ACTIVITY_IF_NEEDED);
         return list;
     }
 
     @Override
-    public void visitMethod(@NonNull JavaContext context, @Nullable AstVisitor visitor, @NonNull MethodInvocation node) {
-        // Ignore if the method doesn't fit our description.
-        ResolvedNode resolved = context.resolve(node);
-        if (!(resolved instanceof ResolvedMethod)) {
-            return;
-        }
-        ResolvedMethod method = (ResolvedMethod) resolved;
-        if (!method.getContainingClass().isSubclassOf(ACTIVITY, false)) {
-            return;
-        }
+    public void visitMethod(JavaContext context, JavaElementVisitor visitor, PsiMethodCallExpression call, PsiMethod method) {
+        JavaEvaluator evaluator = context.getEvaluator();
 
-        String message = "`Activity.startActivity*` was found";
-        context.report(ISSUE, node, context.getLocation(node.astName()), message);
+        if (evaluator.methodMatches(method, ACTIVITY, true, "android.content.Intent")) {
+            String message = "`Activity.startActivity` was found";
+            context.report(ISSUE, call, context.getNameLocation(call), message);
+        }
     }
 
     @Override
