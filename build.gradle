@@ -10,8 +10,8 @@ dependencies {
     compile 'com.android.tools.lint:lint-checks:25.2.3'
     testCompile 'junit:junit:4.11'
     testCompile 'com.android.tools.lint:lint:25.2.3'
-    testCompile 'com.android.tools.lint:lint-tests:25.2.3'
-    testCompile 'com.android.tools:testutils:25.2.3'
+    testCompile 'com.android.tools.lint:lint-tests:24.5.0'
+    testCompile 'com.android.tools:testutils:24.5.0'
 }
 
 jar {

@@ -34,16 +34,15 @@ import static com.android.SdkConstants.TAG_ACTIVITY;
 
 /**
  * Checks for an activity that has never called
- *
  */
 public class UnusedActivityDetector extends ResourceXmlDetector implements Detector.JavaPsiScanner {
 
     private static final Implementation IMPLEMENTATION = new Implementation(
             UnusedActivityDetector.class,
-            EnumSet.of(Scope.MANIFEST,  Scope.ALL_JAVA_FILES)
+            EnumSet.of(Scope.MANIFEST, Scope.ALL_JAVA_FILES)
     );
 
-    public static final Issue ISSUE = Issue.create(
+    static final Issue ISSUE = Issue.create(
             "UnusedActivities",
             "Unused Activities",
             "Unused activieis make application larger, slow down builds,make vulnerable",
@@ -55,7 +54,7 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
     private static final int NUM_OF_ACTIVITIES = 100; //may be increase the number?
     private static final String START_ACTIVITY = "startActivity";
     private static final String START_ACTIVITY_FOR_RESULT = "startActivityForResult";
-    private static final String START_ACTIVITY_FROM_CHILD ="startActivityFromChild";
+    private static final String START_ACTIVITY_FROM_CHILD = "startActivityFromChild";
     private static final String START_ACTIVITY_FROM_FRAGMENT = "startActivityFromFragment";
     private static final String START_ACTIVITY_IF_NEEDED = "startActivityIfNeeded";
     private static final String ACTIVITY = "android.app.Activity";
@@ -85,12 +84,11 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
     @Nullable
     @Override
     public List<String> getApplicableMethodNames() {
-        List<String> list = Collections.singletonList(START_ACTIVITY);
-//        list.add(START_ACTIVITY_FOR_RESULT);
+        //        list.add(START_ACTIVITY_FOR_RESULT);
 //        list.add(START_ACTIVITY_FROM_CHILD);
 //        list.add(START_ACTIVITY_FROM_FRAGMENT);
 //        list.add(START_ACTIVITY_IF_NEEDED);
-        return list;
+        return Collections.singletonList(START_ACTIVITY);
     }
 
     @Override
