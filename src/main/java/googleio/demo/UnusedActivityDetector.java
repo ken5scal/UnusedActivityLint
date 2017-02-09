@@ -127,8 +127,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     public void visitMethod(JavaContext context, JavaElementVisitor visitor, PsiMethodCallExpression call, PsiMethod method) {
         JavaEvaluator evaluator = context.getEvaluator();
         System.out.println("visitMethod");
-
-
         if (evaluator.methodMatches(method, ACTIVITY, true, "android.content.Intent")) {
             startActivityLocation.add(context.getNameLocation(call));
         }
@@ -143,15 +141,13 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     public void visitConstructor(JavaContext context, JavaElementVisitor visitor, PsiNewExpression node, PsiMethod constructor) {
         System.out.println("visitConstructor");
 //        System.out.println("node to string: " + node.toString());
-        System.out.println("node get text: " + node.getText());
+//        System.out.println("node get text: " + node.getText());
         System.out.println("resolve constructor: " + node.resolveConstructor());
-//        System.out.println("type arg list: " + node.getTypeArgumentList());
-//        System.out.println("constructor body: " + constructor.getBody());
-//        System.out.println("constructor name: " + constructor.getName());
         System.out.println("constructor param list: " + constructor.getParameterList());
-//        System.out.println("constructor name identifier: " + constructor.getNameIdentifier());
-//        System.out.println("constructor text: " + constructor.getText());
-//        System.out.println("context location: " + context.getLocation(node));
+//        constructor.getParameterList().getParameters()
+        JavaEvaluator evaluator = context.getEvaluator();
+        System.out.println(constructor.getTypeParameterList().getTypeParameters()[0]);
+        System.out.println(constructor.getTypeParameterList().getTypeParameters()[1]);
     }
 
     @Override
