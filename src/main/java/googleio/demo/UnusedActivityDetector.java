@@ -17,6 +17,7 @@ import com.intellij.psi.JavaElementVisitor;
 import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
+import com.intellij.psi.PsiNewExpression;
 
 import org.w3c.dom.Element;
 
@@ -66,6 +67,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     private Map<String, Location> mUnused;
     private Location mManifestLocation;
     private List<String> mActivities;
+    private List<Location> startActivityLocation = new ArrayList<Location>();
 
     /**
      * Constructs a new {@link UnusedActivityDetector}
@@ -80,26 +82,40 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public void beforeCheckProject(@NonNull Context context) {
+        System.out.println("beforeCheckProject");
         if (context.getPhase() == 1) {
             mDeclarations = new HashSet<String>(NUM_OF_ACTIVITIES);
             mReferences = new HashSet<String>(NUM_OF_ACTIVITIES);
             mActivities = new ArrayList<String>();
         }
+
     }
 
     @Override
     public void afterCheckProject(Context context) {
+        System.out.println("afterCheckProject");
         if (context.getPhase() == 1) {
             mDeclarations.removeAll(mReferences);
             Set<String> unused = mDeclarations;
             mReferences = null;
             mDeclarations = null;
         }
+
+        if (context.getProject() == context.getMainProject()
+                && !context.getMainProject().isLibrary()
+                && mManifestLocation != null) {
+            String message = "`Activity.startActivity` was found";
+            for (Location l : startActivityLocation) {
+                System.out.println("xml: " + mActivities.get(startActivityLocation.indexOf(l)));
+                context.report(ISSUE, l, message);
+            }
+        }
     }
 
     @Nullable
     @Override
     public List<String> getApplicableMethodNames() {
+        System.out.println("getApplicableMethodNames");
         //        list.add(START_ACTIVITY_FOR_RESULT);
 //        list.add(START_ACTIVITY_FROM_CHILD);
 //        list.add(START_ACTIVITY_FROM_FRAGMENT);
@@ -110,38 +126,61 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public void visitMethod(JavaContext context, JavaElementVisitor visitor, PsiMethodCallExpression call, PsiMethod method) {
         JavaEvaluator evaluator = context.getEvaluator();
+        System.out.println("visitMethod");
+
 
         if (evaluator.methodMatches(method, ACTIVITY, true, "android.content.Intent")) {
-            String message = "`Activity.startActivity` was found";
-            context.report(ISSUE, call, context.getNameLocation(call), message);
+            startActivityLocation.add(context.getNameLocation(call));
         }
     }
 
+    @Override
+    public List<String> getApplicableConstructorTypes() {
+        return Collections.singletonList("android.content.Intent");
+    }
+
+    @Override
+    public void visitConstructor(JavaContext context, JavaElementVisitor visitor, PsiNewExpression node, PsiMethod constructor) {
+        System.out.println("visitConstructor");
+//        System.out.println(visitor.toString());
+//        System.out.println("node qualifier: " + node.getQualifier());
+//        System.out.println(node.toString());
+//        System.out.println(node.getText());
+//        System.out.println(node.resolveConstructor());
+//        System.out.println(node.getTypeArgumentList());
+//        System.out.println(constructor.getBody());
+//        System.out.println(constructor.getName());
+//        System.out.println(constructor.getParameterList());
+//        System.out.println(constructor.getNameIdentifier());
+//        System.out.println(constructor.getText());
+        System.out.println(context.getLocation(node));
+    }
 
     @Override
     public void checkClass(JavaContext context, PsiClass node) {
+        System.out.println("checkClass");
         if (node == null) {
             return;
         }
 
         boolean found = false;
         for (PsiMethod constructor : node.getConstructors()) {
-            if (isIntentConstructor(constructor)) {
-                found = true;
-                break;
-            }
+//            if (isIntentConstructor(constructor)) {
+//                found = true;
+//                break;
+//            }
         }
     }
 
-    private static boolean isIntentConstructor(PsiMethod method) {
-        // Accept
-        //  android.content.Intent
-        return false;
-    }
+//    private static boolean isIntentConstructor(PsiMethod method) {
+//        // Accept
+//        //  android.content.Intent
+//        return false;
+//    }
 
     @Override
     public void beforeCheckFile(@NonNull Context context) {
-        File file = context.file;
+//        File file = context.file;
 //        boolean isJavaFile = LintUtils.isXmlFile()
     }
 
@@ -161,13 +200,14 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public Collection<String> getApplicableElements() {
+        System.out.println("getApplicableElements");
         return Collections.singleton(TAG_ACTIVITY);
     }
 
     @Override
     public void visitElement(XmlContext context, Element activityElement) {
+        System.out.println("visitElement");
         if (activityElement.getTagName().equals(TAG_ACTIVITY)) {
-
             String activityName = activityElement.getAttributeNS(ANDROID_URI, ATTR_NAME);
             mActivities.add(activityName);
         }
