@@ -10,17 +10,18 @@ import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
 import com.android.tools.lint.detector.api.Location;
-import com.android.tools.lint.detector.api.ResourceXmlDetector;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
 import com.intellij.psi.JavaElementVisitor;
+import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 
 import org.w3c.dom.Element;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -29,17 +30,19 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import static com.android.SdkConstants.ANDROID_URI;
+import static com.android.SdkConstants.ATTR_NAME;
 import static com.android.SdkConstants.TAG_ACTIVITY;
 
 
 /**
  * Checks for an activity that has never called
  */
-public class UnusedActivityDetector extends ResourceXmlDetector implements Detector.JavaPsiScanner {
+public class UnusedActivityDetector extends Detector implements Detector.XmlScanner, Detector.JavaPsiScanner {
 
     private static final Implementation IMPLEMENTATION = new Implementation(
             UnusedActivityDetector.class,
-            EnumSet.of(Scope.MANIFEST, Scope.ALL_JAVA_FILES)
+            EnumSet.of(Scope.MANIFEST, Scope.JAVA_FILE)
     );
 
     static final Issue ISSUE = Issue.create(
@@ -61,6 +64,8 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
     private Set<String> mDeclarations;
     private Set<String> mReferences;
     private Map<String, Location> mUnused;
+    private Location mManifestLocation;
+    private List<String> mActivities;
 
     /**
      * Constructs a new {@link UnusedActivityDetector}
@@ -78,6 +83,17 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
         if (context.getPhase() == 1) {
             mDeclarations = new HashSet<String>(NUM_OF_ACTIVITIES);
             mReferences = new HashSet<String>(NUM_OF_ACTIVITIES);
+            mActivities = new ArrayList<String>();
+        }
+    }
+
+    @Override
+    public void afterCheckProject(Context context) {
+        if (context.getPhase() == 1) {
+            mDeclarations.removeAll(mReferences);
+            Set<String> unused = mDeclarations;
+            mReferences = null;
+            mDeclarations = null;
         }
     }
 
@@ -101,6 +117,28 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
         }
     }
 
+
+    @Override
+    public void checkClass(JavaContext context, PsiClass node) {
+        if (node == null) {
+            return;
+        }
+
+        boolean found = false;
+        for (PsiMethod constructor : node.getConstructors()) {
+            if (isIntentConstructor(constructor)) {
+                found = true;
+                break;
+            }
+        }
+    }
+
+    private static boolean isIntentConstructor(PsiMethod method) {
+        // Accept
+        //  android.content.Intent
+        return false;
+    }
+
     @Override
     public void beforeCheckFile(@NonNull Context context) {
         File file = context.file;
@@ -108,9 +146,18 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
     }
 
     @Override
+    public void afterCheckFile(Context context) {
+        if (context.getProject() == context.getMainProject()) {
+            mManifestLocation = Location.create(context.file);
+        }
+    }
+
+    @Override
     public EnumSet<Scope> getApplicableFiles() {
         return Scope.JAVA_FILE_SCOPE;
     }
+
+    // ---- Implements Detector.XmlScanner ----
 
     @Override
     public Collection<String> getApplicableElements() {
@@ -118,12 +165,18 @@ public class UnusedActivityDetector extends ResourceXmlDetector implements Detec
     }
 
     @Override
-    public void visitElement(XmlContext context, Element element) {
-        if (!element.hasAttributeNS(
-                "http://schemas.android.com/apk/res/com.google.io.demo",
-                "exampleString")) {
-            context.report(ISSUE, element, context.getLocation(element),
-                    "Missing required attribute 'exampleString'");
+    public void visitElement(XmlContext context, Element activityElement) {
+        if (activityElement.getTagName().equals(TAG_ACTIVITY)) {
+
+            String activityName = activityElement.getAttributeNS(ANDROID_URI, ATTR_NAME);
+            mActivities.add(activityName);
         }
+
+//        if (!activityElement.hasAttributeNS(
+//                "http://schemas.android.com/apk/res/com.google.io.demo",
+//                "exampleString")) {
+//            context.report(ISSUE, activityElement, context.getLocation(activityElement),
+//                    "Missing required attribute 'exampleString'");
+//        }
     }
 }
