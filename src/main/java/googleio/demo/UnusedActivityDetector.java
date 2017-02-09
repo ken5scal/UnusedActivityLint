@@ -142,7 +142,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public void visitConstructor(JavaContext context, JavaElementVisitor visitor, PsiNewExpression node, PsiMethod constructor) {
         System.out.println("visitConstructor");
-        System.out.println("node to string: " + node.toString());
+//        System.out.println("node to string: " + node.toString());
         System.out.println("node get text: " + node.getText());
         System.out.println("resolve constructor: " + node.resolveConstructor());
 //        System.out.println("type arg list: " + node.getTypeArgumentList());
