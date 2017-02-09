@@ -143,11 +143,16 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 //        System.out.println("node to string: " + node.toString());
 //        System.out.println("node get text: " + node.getText());
         System.out.println("resolve constructor: " + node.resolveConstructor());
-        System.out.println("constructor param list: " + constructor.getParameterList());
+//        System.out.println("constructor param list: " + constructor.getParameterList());
 //        constructor.getParameterList().getParameters()
         JavaEvaluator evaluator = context.getEvaluator();
-        System.out.println(constructor.getTypeParameterList().getTypeParameters()[0]);
-        System.out.println(constructor.getTypeParameterList().getTypeParameters()[1]);
+//        constructor.getTypeParameterList().getTypeParameters()
+//        System.out.println(constructor.getTypeParameterList().getTypeParameters()[0]);
+//        System.out.println(constructor.getTypeParameterList().getTypeParameters()[1]);
+
+        for (int i =0;i < constructor.getParameterList().getParametersCount(); i++ ) {
+                    System.out.println(constructor.getTypeParameters()[i]);
+        }
     }
 
     @Override
