@@ -142,18 +142,18 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public void visitConstructor(JavaContext context, JavaElementVisitor visitor, PsiNewExpression node, PsiMethod constructor) {
         System.out.println("visitConstructor");
-//        System.out.println(visitor.toString());
-//        System.out.println("node qualifier: " + node.getQualifier());
-//        System.out.println(node.toString());
-//        System.out.println(node.getText());
-//        System.out.println(node.resolveConstructor());
-//        System.out.println(node.getTypeArgumentList());
-//        System.out.println(constructor.getBody());
-//        System.out.println(constructor.getName());
-//        System.out.println(constructor.getParameterList());
-//        System.out.println(constructor.getNameIdentifier());
-//        System.out.println(constructor.getText());
-        System.out.println(context.getLocation(node));
+        System.out.println("visito to string: " + visitor.toString());
+        System.out.println("node qualifier: " + node.getQualifier());
+        System.out.println("node qualifier: " + node.toString());
+        System.out.println("node qualifier: " + node.getText());
+        System.out.println("resolve constructor: " + node.resolveConstructor());
+        System.out.println("type arg list: " + node.getTypeArgumentList());
+        System.out.println("constructor body: " + constructor.getBody());
+        System.out.println("constructor name: " + constructor.getName());
+        System.out.println("constructor param list: " + constructor.getParameterList());
+        System.out.println("constructor name identifier: " + constructor.getNameIdentifier());
+        System.out.println("constructor text: " + constructor.getText());
+        System.out.println("context location: " + context.getLocation(node));
     }
 
     @Override
