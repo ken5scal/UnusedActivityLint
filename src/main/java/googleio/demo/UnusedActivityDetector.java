@@ -150,8 +150,8 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 //        System.out.println(constructor.getTypeParameterList().getTypeParameters()[0]);
 //        System.out.println(constructor.getTypeParameterList().getTypeParameters()[1]);
 
-        for (int i =0;i < constructor.getParameterList().getParametersCount(); i++ ) {
-                    System.out.println(constructor.getTypeParameters()[i]);
+        for (int i = 0; i < constructor.getParameterList().getParametersCount(); i++) {
+            System.out.println(constructor.getTypeParameters()[i]);
         }
     }
 
