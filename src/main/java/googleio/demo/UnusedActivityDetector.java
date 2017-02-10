@@ -3,6 +3,7 @@ package googleio.demo;
 import com.android.annotations.NonNull;
 import com.android.annotations.Nullable;
 import com.android.tools.lint.client.api.JavaEvaluator;
+import com.android.tools.lint.client.api.JavaParser;
 import com.android.tools.lint.detector.api.Category;
 import com.android.tools.lint.detector.api.Context;
 import com.android.tools.lint.detector.api.Detector;
@@ -18,6 +19,7 @@ import com.intellij.psi.PsiClass;
 import com.intellij.psi.PsiMethod;
 import com.intellij.psi.PsiMethodCallExpression;
 import com.intellij.psi.PsiNewExpression;
+import com.intellij.psi.PsiParameter;
 
 import org.w3c.dom.Element;
 
@@ -30,6 +32,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import lombok.ast.AstVisitor;
+import lombok.ast.ConstructorInvocation;
 
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_NAME;
@@ -153,6 +158,14 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         for (int i = 0; i < constructor.getParameterList().getParametersCount(); i++) {
             System.out.println(Integer.toString(i) + constructor.getParameterList().getParameters()[i]);
         }
+        PsiParameter param = constructor.getParameterList().getParameters()[1];
+//        JavaParser.TypeDescriptor
+
+    }
+
+    @Override
+    public void visitConstructor(JavaContext context, AstVisitor visitor, ConstructorInvocation node, JavaParser.ResolvedMethod constructor) {
+        super.visitConstructor(context, visitor, node, constructor);
     }
 
     @Override
