@@ -69,6 +69,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     private Map<String, Location> mUnused;
     private Location mManifestLocation;
     private List<String> mActivities;
+    List<String> mClasses;
     private List<Location> startActivityLocation = new ArrayList<Location>();
 
     /**
@@ -84,6 +85,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             mDeclarations = new HashSet<String>(NUM_OF_ACTIVITIES);
             mReferences = new HashSet<String>(NUM_OF_ACTIVITIES);
             mActivities = new ArrayList<String>();
+            mClasses = new ArrayList<String>();
         }
     }
 
@@ -176,13 +178,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 //        return false;
 //    }
 
-    @Override
-    public void afterCheckFile(Context context) {
-        if (context.getProject() == context.getMainProject()) {
-            mManifestLocation = Location.create(context.file);
-        }
-    }
-
     // ---- Implements Detector.XmlScanner ----
 
     @Override
@@ -203,15 +198,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             String activityName = activityElement.getAttributeNS(ANDROID_URI, ATTR_NAME);
             mActivities.add(activityName);
         }
-
-//        if (!activityElement.hasAttributeNS(
-//                "http://schemas.android.com/apk/res/com.google.io.demo",
-//                "exampleString")) {
-//            context.report(ISSUE, activityElement, context.getLocation(activityElement),
-//                    "Missing required attribute 'exampleString'");
-//        }
     }
-
 
     @NonNull
     @Override
@@ -232,13 +219,18 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         if (LintUtils.isXmlFile(file) || LintUtils.isBitmapFile(file)) {
             return;
         }
-
-        String fileName = file.getName();
-        String parentName = file.getParentFile().getName();
-
-//        System.out.printf("FileName:  %s\nParentName: %s\n", fileName, parentName);
     }
 
+    @Override
+    public void afterCheckFile(Context context) {
+        if (context instanceof Fuga) {
+            System.out.println("Heyyyy, it is working");
+        }
+
+        if (context.getProject() == context.getMainProject()) {
+            mManifestLocation = Location.create(context.file);
+        }
+    }
 
     @Override
     public List<Class<? extends Node>> getApplicableNodeTypes() {
@@ -255,27 +247,34 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     }
 
     private static class Hoge extends ForwardingAstVisitor {
-        private final JavaContext context;
+        private final Fuga context;
 
-        public Hoge(JavaContext context) {
-            this.context = context;
-        }
-
-        @Override
-        public boolean visitClassDeclaration(ClassDeclaration node) {
-            System.out.println("visitClassDeclaration");
-            System.out.println(node);
-            System.out.println("");
-            return super.visitClassDeclaration(node);
+        Hoge(JavaContext context) {
+            this.context = new Fuga(context);
         }
 
         @Override
         public boolean visitClassLiteral(ClassLiteral node) {
-            System.out.println("visitClassLiteral");
-            System.out.println(node);
-            System.out.println("Node: " + node.getClass().getName());
-            System.out.println("");
+            System.out.println("visitClassLiteralllllllllllll");
+            System.out.println(node.toString());
+            context.incrementClassLiteral(node.toString());
             return super.visitClassLiteral(node);
+        }
+    }
+
+    private static class Fuga extends JavaContext {
+        List<String> allClassLiterals = new ArrayList<String>();
+
+        Fuga(JavaContext context) {
+            super(context.getDriver(),
+                    context.getProject(),
+                    context.getMainProject(),
+                    context.file,
+                    context.getParser());
+        }
+
+        void incrementClassLiteral(String newLiteral) {
+            allClassLiterals.add(newLiteral);
         }
     }
 }
