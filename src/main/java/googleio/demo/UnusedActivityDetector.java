@@ -223,8 +223,12 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public void afterCheckFile(Context context) {
+        System.out.println("afterCheckFile");
+        if (context instanceof JavaContext) {
+            System.out.println("Heyyyy, JavaContext is working");
+        }
         if (context instanceof Fuga) {
-            System.out.println("Heyyyy, it is working");
+            System.out.println("Heyyyy, Fuga Context is working");
         }
 
         if (context.getProject() == context.getMainProject()) {
@@ -262,15 +266,14 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         }
     }
 
-    private static class Fuga extends JavaContext {
+    private static class Fuga extends Context {
         List<String> allClassLiterals = new ArrayList<String>();
 
-        Fuga(JavaContext context) {
+        Fuga(Context context) {
             super(context.getDriver(),
                     context.getProject(),
                     context.getMainProject(),
-                    context.file,
-                    context.getParser());
+                    context.file);
         }
 
         void incrementClassLiteral(String newLiteral) {
