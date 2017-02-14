@@ -179,11 +179,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         }
     }
 
-    @Override
-    public EnumSet<Scope> getApplicableFiles() {
-        return Scope.JAVA_FILE_SCOPE;
-    }
-
     // ---- Implements Detector.XmlScanner ----
 
     @Override
@@ -222,6 +217,11 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     // ---- Implements JavaScanner ----
     @Override
+    public EnumSet<Scope> getApplicableFiles() {
+        return Scope.JAVA_FILE_SCOPE;
+    }
+
+    @Override
     public void beforeCheckFile(@NonNull Context context) {
         System.out.println("beforeCheckFile");
         File file = context.file;
@@ -231,11 +231,9 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
         String fileName = file.getName();
         String parentName = file.getParentFile().getName();
+
         System.out.printf("FileName:  %s\nParentName: %s\n", fileName, parentName);
     }
 
-    @Override
-    public void visitReference(JavaContext context, JavaElementVisitor visitor, PsiJavaCodeReferenceElement reference, PsiElement referenced) {
-        super.visitReference(context, visitor, reference, referenced);
-    }
+
 }
