@@ -47,7 +47,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     static final Issue ISSUE = Issue.create(
             "UnusedActivities",
             "Unused Activities",
-            "Unused activieis make application larger, slow down builds,make vulnerable",
+            "Unused activities make application larger, slow down builds, make potential vulnerabilities",
             Category.SECURITY,
             3,
             Severity.WARNING,
