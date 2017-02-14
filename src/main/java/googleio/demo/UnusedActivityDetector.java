@@ -226,9 +226,9 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         System.out.println("afterCheckFile");
         if (context instanceof JavaContext) {
             System.out.println("Heyyyy, JavaContext is working");
-        }
-        if (context instanceof Fuga) {
-            System.out.println("Heyyyy, Fuga Context is working");
+            for (String claz : mClasses) {
+                System.out.println(claz);
+            }
         }
 
         if (context.getProject() == context.getMainProject()) {
@@ -247,37 +247,20 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public AstVisitor createJavaVisitor(JavaContext context) {
         System.out.println("createJavaVisitor");
-        return new Hoge(context);
+        return new ClassLiteralVisitor();
     }
 
-    private static class Hoge extends ForwardingAstVisitor {
-        private final Fuga context;
-
-        Hoge(JavaContext context) {
-            this.context = new Fuga(context);
+    private class ClassLiteralVisitor extends ForwardingAstVisitor {
+        ClassLiteralVisitor() {
+            super();
         }
 
         @Override
         public boolean visitClassLiteral(ClassLiteral node) {
             System.out.println("visitClassLiteralllllllllllll");
             System.out.println(node.toString());
-            context.incrementClassLiteral(node.toString());
+            mClasses.add(node.toString());
             return super.visitClassLiteral(node);
-        }
-    }
-
-    private static class Fuga extends Context {
-        List<String> allClassLiterals = new ArrayList<String>();
-
-        Fuga(Context context) {
-            super(context.getDriver(),
-                    context.getProject(),
-                    context.getMainProject(),
-                    context.file);
-        }
-
-        void incrementClassLiteral(String newLiteral) {
-            allClassLiterals.add(newLiteral);
         }
     }
 }
