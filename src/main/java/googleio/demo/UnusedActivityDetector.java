@@ -99,6 +99,19 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             mDeclarations = null;
         }
 
+        System.out.print("  activities: ");
+        for (String activity : mActivities) {
+            System.out.print(activity);
+        }
+        System.out.println();
+
+        System.out.print("  activities: ");
+        for (String claz : mClasses) {
+            System.out.print(claz);
+        }
+        System.out.println();
+
+
         if (context.getProject() == context.getMainProject()
                 && !context.getMainProject().isLibrary()
                 && mManifestLocation != null) {
@@ -109,74 +122,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             }
         }
     }
-
-//    @Nullable
-//    @Override
-//    public List<String> getApplicableMethodNames() {
-//        System.out.println("getApplicableMethodNames");
-//        //        list.add(START_ACTIVITY_FOR_RESULT);
-////        list.add(START_ACTIVITY_FROM_CHILD);
-////        list.add(START_ACTIVITY_FROM_FRAGMENT);
-////        list.add(START_ACTIVITY_IF_NEEDED);
-//        return Collections.singletonList(START_ACTIVITY);
-//    }
-
-//    @Override
-//    public void visitMethod(JavaContext context, JavaElementVisitor visitor, PsiMethodCallExpression call, PsiMethod method) {
-//        JavaEvaluator evaluator = context.getEvaluator();
-//        System.out.println("visitMethod");
-//        if (evaluator.methodMatches(method, ACTIVITY, true, "android.content.Intent")) {
-//            startActivityLocation.add(context.getNameLocation(call));
-//        }
-//    }
-//
-//    @Override
-//    public List<String> getApplicableConstructorTypes() {
-//        return Collections.singletonList("android.content.Intent");
-//    }
-//
-//    @Override
-//    public void visitConstructor(JavaContext context, JavaElementVisitor visitor, PsiNewExpression node, PsiMethod constructor) {
-//        System.out.println("visitConstructor");
-////        System.out.println("node to string: " + node.toString());
-////        System.out.println("node get text: " + node.getText());
-////        System.out.println("resolve constructor: " + node.resolveConstructor());
-////        System.out.println("constructor param list: " + constructor.getParameterList());
-////        constructor.getParameterList().getParameters()
-////        constructor.getTypeParameterList().getTypeParameters()
-////        System.out.println(constructor.getTypeParameterList().getTypeParameters()[0]);
-////        System.out.println(constructor.getTypeParameterList().getTypeParameters()[1]);
-//
-//        System.out.println(constructor.getParameterList().getParametersCount());
-//        for (int i = 0; i < constructor.getParameterList().getParametersCount(); i++) {
-//            System.out.println(Integer.toString(i) + constructor.getParameterList().getParameters()[i]);
-//        }
-//        PsiParameter param = constructor.getParameterList().getParameters()[1];
-////        JavaParser.TypeDescriptor
-//
-//    }
-
-//    @Override
-//    public void checkClass(JavaContext context, PsiClass node) {
-//        System.out.println("checkClass");
-//        if (node == null) {
-//            return;
-//        }
-//
-//        boolean found = false;
-//        for (PsiMethod constructor : node.getConstructors()) {
-////            if (isIntentConstructor(constructor)) {
-////                found = true;
-////                break;
-////            }
-//        }
-//    }
-
-//    private static boolean isIntentConstructor(PsiMethod method) {
-//        // Accept
-//        //  android.content.Intent
-//        return false;
-//    }
 
     // ---- Implements Detector.XmlScanner ----
 
@@ -200,12 +145,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         }
     }
 
-    @NonNull
-    @Override
-    public Speed getSpeed() {
-        return Speed.FAST;
-    }
-
     // ---- Implements JavaScanner ----
     @Override
     public EnumSet<Scope> getApplicableFiles() {
@@ -215,6 +154,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public void beforeCheckFile(@NonNull Context context) {
         System.out.println("beforeCheckFile");
+        // TODO: I don't want to  go through generated files.
         File file = context.file;
         if (LintUtils.isXmlFile(file) || LintUtils.isBitmapFile(file)) {
             return;
@@ -258,3 +198,4 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             }
         };
     }
+}
