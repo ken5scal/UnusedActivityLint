@@ -13,9 +13,6 @@ import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.Speed;
 import com.android.tools.lint.detector.api.XmlContext;
-import com.intellij.psi.JavaElementVisitor;
-import com.intellij.psi.PsiElement;
-import com.intellij.psi.PsiJavaCodeReferenceElement;
 
 import org.w3c.dom.Element;
 
@@ -33,7 +30,6 @@ import java.util.Set;
 import lombok.ast.AstVisitor;
 import lombok.ast.ClassDeclaration;
 import lombok.ast.ClassLiteral;
-import lombok.ast.EnumDeclaration;
 import lombok.ast.ForwardingAstVisitor;
 import lombok.ast.Node;
 
@@ -266,9 +262,19 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         }
 
         @Override
+        public boolean visitClassDeclaration(ClassDeclaration node) {
+            System.out.println("visitClassDeclaration");
+            System.out.println(node);
+            System.out.println("");
+            return super.visitClassDeclaration(node);
+        }
+
+        @Override
         public boolean visitClassLiteral(ClassLiteral node) {
-            System.out.println(node.getDescription());
+            System.out.println("visitClassLiteral");
+            System.out.println(node);
             System.out.println("Node: " + node.getClass().getName());
+            System.out.println("");
             return super.visitClassLiteral(node);
         }
     }
