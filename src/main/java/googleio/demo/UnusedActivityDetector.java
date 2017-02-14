@@ -7,11 +7,9 @@ import com.android.tools.lint.detector.api.Detector;
 import com.android.tools.lint.detector.api.Implementation;
 import com.android.tools.lint.detector.api.Issue;
 import com.android.tools.lint.detector.api.JavaContext;
-import com.android.tools.lint.detector.api.LintUtils;
 import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
-import com.android.tools.lint.detector.api.Speed;
 import com.android.tools.lint.detector.api.XmlContext;
 
 import org.w3c.dom.Element;
@@ -22,13 +20,14 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 import lombok.ast.AstVisitor;
-import lombok.ast.ClassDeclaration;
 import lombok.ast.ClassLiteral;
 import lombok.ast.ForwardingAstVisitor;
 import lombok.ast.Node;
@@ -57,20 +56,10 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             Severity.WARNING,
             IMPLEMENTATION);
 
-    private static final int NUM_OF_ACTIVITIES = 100; //may be increase the number?
-    private static final String START_ACTIVITY = "startActivity";
-    private static final String START_ACTIVITY_FOR_RESULT = "startActivityForResult";
-    private static final String START_ACTIVITY_FROM_CHILD = "startActivityFromChild";
-    private static final String START_ACTIVITY_FROM_FRAGMENT = "startActivityFromFragment";
-    private static final String START_ACTIVITY_IF_NEEDED = "startActivityIfNeeded";
-    private static final String ACTIVITY = "android.app.Activity";
-    private Set<String> mDeclarations;
-    private Set<String> mReferences;
-    private Map<String, Location> mUnused;
     private Location mManifestLocation;
-    private List<String> mActivities;
-    List<String> mClasses;
-    private List<Location> startActivityLocation = new ArrayList<Location>();
+    private final List<String> mClassNames = new ArrayList<String>();
+    private final Map<String, Location.Handle> mDeclaredActivities =
+            new HashMap<String, Location.Handle>();
 
     /**
      * Constructs a new {@link UnusedActivityDetector}
@@ -79,46 +68,26 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     }
 
     @Override
-    public void beforeCheckProject(@NonNull Context context) {
-        System.out.println("beforeCheckProject");
-        if (context.getPhase() == 1) {
-            mDeclarations = new HashSet<String>(NUM_OF_ACTIVITIES);
-            mReferences = new HashSet<String>(NUM_OF_ACTIVITIES);
-            mActivities = new ArrayList<String>();
-            mClasses = new ArrayList<String>();
-        }
-    }
-
-    @Override
     public void afterCheckProject(Context context) {
-        System.out.println("afterCheckProject");
-        if (context.getPhase() == 1) {
-            mDeclarations.removeAll(mReferences);
-            Set<String> unused = mDeclarations;
-            mReferences = null;
-            mDeclarations = null;
-        }
-
-        System.out.print("  activities: ");
-        for (String activity : mActivities) {
-            System.out.print(activity);
-        }
-        System.out.println();
-
-        System.out.print("  activities: ");
-        for (String claz : mClasses) {
-            System.out.print(claz);
-        }
-        System.out.println();
-
-
         if (context.getProject() == context.getMainProject()
                 && !context.getMainProject().isLibrary()
                 && mManifestLocation != null) {
-            String message = "`Activity.startActivity` was found";
-            for (Location l : startActivityLocation) {
-                System.out.println("xml: " + mActivities.get(startActivityLocation.indexOf(l)));
-                context.report(ISSUE, l, message);
+
+            for (String activityName : mDeclaredActivities.keySet()) {
+                boolean matched = false;
+                System.out.println(activityName);
+
+                for (String className : mClassNames) {
+                    System.out.println("    " + className);
+                    if (!matched && activityName.matches(".*" + className+ ".*")) {
+                        matched = true;
+                    }
+                }
+                if (!matched) {
+                    context.report(ISSUE,
+                            mDeclaredActivities.get(activityName).resolve(),
+                            String.format("Unused Activity `%s` Detected", activityName));
+                }
             }
         }
     }
@@ -138,10 +107,17 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public void visitElement(XmlContext context, Element activityElement) {
-        System.out.println("visitElement");
-        if (activityElement.getTagName().equals(TAG_ACTIVITY)) {
+        if (activityElement.getTagName().equals(TAG_ACTIVITY)
+                && !context.getMainProject().isLibrary()) {
             String activityName = activityElement.getAttributeNS(ANDROID_URI, ATTR_NAME);
-            mActivities.add(activityName);
+            if (activityName == null || activityName.isEmpty()) {
+                return;
+            }
+            // If the activity class name starts with a '.', it is shorthand for prepending the
+            // package name specified in the manifest.
+            if (activityName.startsWith(".")){
+                mDeclaredActivities.put(activityName, context.createLocationHandle(activityElement));
+            }
         }
     }
 
@@ -153,24 +129,11 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public void beforeCheckFile(@NonNull Context context) {
-        System.out.println("beforeCheckFile");
         // TODO: I don't want to  go through generated files.
-        File file = context.file;
-        if (LintUtils.isXmlFile(file) || LintUtils.isBitmapFile(file)) {
-            return;
-        }
     }
 
     @Override
     public void afterCheckFile(Context context) {
-        System.out.println("afterCheckFile");
-        if (context instanceof JavaContext) {
-            System.out.println("Heyyyy, JavaContext is working");
-            for (String claz : mClasses) {
-                System.out.println(claz);
-            }
-        }
-
         if (context.getProject() == context.getMainProject()) {
             mManifestLocation = Location.create(context.file);
         }
@@ -178,21 +141,24 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public List<Class<? extends Node>> getApplicableNodeTypes() {
-        System.out.println("getApplicableNodeTypes");
         return Arrays.<Class<? extends Node>>asList(
                 ClassLiteral.class
         );
     }
 
     @Override
-    public AstVisitor createJavaVisitor(JavaContext context) {
-        System.out.println("createJavaVisitor");
+    public AstVisitor createJavaVisitor(final JavaContext context) {
         return new ForwardingAstVisitor() {
             @Override
             public boolean visitClassLiteral(ClassLiteral node) {
-                System.out.println("visitClassLiteralllllllllllll");
-                if (!mClasses.contains(node.toString())) {
-                    mClasses.add(node.toString());
+                String className = node.toString(); // foo.class
+                if (className.isEmpty()) {
+                    return false;
+                }
+                className = className.split(Pattern.quote("."), 0)[0];
+
+                if (!mClassNames.contains(className)) {
+                    mClassNames.add(className);
                 }
                 return super.visitClassLiteral(node);
             }
