@@ -240,7 +240,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     public List<Class<? extends Node>> getApplicableNodeTypes() {
         System.out.println("getApplicableNodeTypes");
         return Arrays.<Class<? extends Node>>asList(
-                ClassLiteral.class, ClassDeclaration.class
+                ClassLiteral.class
         );
     }
 
