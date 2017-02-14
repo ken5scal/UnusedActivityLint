@@ -11,6 +11,7 @@ import com.android.tools.lint.detector.api.Location;
 import com.android.tools.lint.detector.api.Scope;
 import com.android.tools.lint.detector.api.Severity;
 import com.android.tools.lint.detector.api.XmlContext;
+import com.intellij.psi.JavaElementVisitor;
 
 import org.w3c.dom.Element;
 
@@ -21,10 +22,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.regex.Pattern;
 
 import lombok.ast.AstVisitor;
@@ -40,7 +39,6 @@ import static com.android.SdkConstants.TAG_ACTIVITY;
 /**
  * Checks for an activity that has never called
  */
-//public class UnusedActivityDetector extends Detector implements Detector.XmlScanner, Detector.JavaPsiScanner {
 public class UnusedActivityDetector extends Detector implements Detector.XmlScanner, Detector.JavaScanner {
     private static final Implementation IMPLEMENTATION = new Implementation(
             UnusedActivityDetector.class,
@@ -58,8 +56,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     private Location mManifestLocation;
     private final List<String> mClassNames = new ArrayList<String>();
-    private final Map<String, Location.Handle> mDeclaredActivities =
-            new HashMap<String, Location.Handle>();
+    private final Map<String, Location.Handle> mDeclaredActivities = new HashMap<String, Location.Handle>();
 
     /**
      * Constructs a new {@link UnusedActivityDetector}
@@ -79,7 +76,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
                 for (String className : mClassNames) {
                     System.out.println("    " + className);
-                    if (!matched && activityName.matches(".*" + className+ ".*")) {
+                    if (!matched && activityName.matches(".*" + className + ".*")) {
                         matched = true;
                     }
                 }
@@ -93,7 +90,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     }
 
     // ---- Implements Detector.XmlScanner ----
-
     @Override
     public Collection<String> getApplicableElements() {
         System.out.println("getApplicableElements");
@@ -115,7 +111,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
             }
             // If the activity class name starts with a '.', it is shorthand for prepending the
             // package name specified in the manifest.
-            if (activityName.startsWith(".")){
+            if (activityName.startsWith(".")) {
                 mDeclaredActivities.put(activityName, context.createLocationHandle(activityElement));
             }
         }
@@ -125,11 +121,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     @Override
     public EnumSet<Scope> getApplicableFiles() {
         return Scope.JAVA_FILE_SCOPE;
-    }
-
-    @Override
-    public void beforeCheckFile(@NonNull Context context) {
-        // TODO: I don't want to  go through generated files.
     }
 
     @Override
