@@ -91,7 +91,6 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
     // ---- Implements Detector.XmlScanner ----
     @Override
     public Collection<String> getApplicableElements() {
-        System.out.println("getApplicableElements");
         return Collections.singleton(TAG_ACTIVITY);
     }
 
