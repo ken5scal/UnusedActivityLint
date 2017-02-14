@@ -21,6 +21,7 @@ import org.w3c.dom.Element;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -28,6 +29,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+
+import lombok.ast.AstVisitor;
+import lombok.ast.ClassDeclaration;
+import lombok.ast.ClassLiteral;
+import lombok.ast.EnumDeclaration;
+import lombok.ast.ForwardingAstVisitor;
+import lombok.ast.Node;
 
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_NAME;
@@ -189,7 +197,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public boolean appliesTo(@NonNull Context context, @NonNull File file) {
-        return true;
+        return true; // TODO: XML -> true // generated -> false
     }
 
     @Override
@@ -232,8 +240,36 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         String fileName = file.getName();
         String parentName = file.getParentFile().getName();
 
-        System.out.printf("FileName:  %s\nParentName: %s\n", fileName, parentName);
+//        System.out.printf("FileName:  %s\nParentName: %s\n", fileName, parentName);
     }
 
 
+    @Override
+    public List<Class<? extends Node>> getApplicableNodeTypes() {
+        System.out.println("getApplicableNodeTypes");
+        return Arrays.<Class<? extends Node>>asList(
+                ClassLiteral.class, ClassDeclaration.class
+        );
+    }
+
+    @Override
+    public AstVisitor createJavaVisitor(JavaContext context) {
+        System.out.println("createJavaVisitor");
+        return new Hoge(context);
+    }
+
+    private static class Hoge extends ForwardingAstVisitor {
+        private final JavaContext context;
+
+        public Hoge(JavaContext context) {
+            this.context = context;
+        }
+
+        @Override
+        public boolean visitClassLiteral(ClassLiteral node) {
+            System.out.println(node.getDescription());
+            System.out.println("Node: " + node.getClass().getName());
+            return super.visitClassLiteral(node);
+        }
+    }
 }
