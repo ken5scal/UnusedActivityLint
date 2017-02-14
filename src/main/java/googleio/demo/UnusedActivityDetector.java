@@ -258,8 +258,9 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
         @Override
         public boolean visitClassLiteral(ClassLiteral node) {
             System.out.println("visitClassLiteralllllllllllll");
-            System.out.println(node.toString());
-            mClasses.add(node.toString());
+            if (!mClasses.contains(node.toString())) {
+                mClasses.add(node.toString());
+            }
             return super.visitClassLiteral(node);
         }
     }
