@@ -30,6 +30,7 @@ import lombok.ast.ClassLiteral;
 import lombok.ast.ForwardingAstVisitor;
 import lombok.ast.Node;
 
+import static com.android.SdkConstants.ANDROID_MANIFEST_XML;
 import static com.android.SdkConstants.ANDROID_URI;
 import static com.android.SdkConstants.ATTR_NAME;
 import static com.android.SdkConstants.TAG_ACTIVITY;
@@ -37,6 +38,10 @@ import static com.android.SdkConstants.TAG_ACTIVITY;
 
 /**
  * Checks for an activity that has never called
+ * Refs: https://developer.android.com/studio/write/lint.html
+ * Refs: https://github.com/googlesamples/android-custom-lint-rules
+ * Refs: https://realm.io/news/360andev-matthew-compton-linty-fresh-java-android/
+ * Refs: https://android.googlesource.com/platform/tools/base/+/master/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks
  */
 public class UnusedActivityDetector extends Detector implements Detector.XmlScanner, Detector.JavaScanner {
     private static final Implementation IMPLEMENTATION = new Implementation(
@@ -71,10 +76,8 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
             for (String activityName : mDeclaredActivities.keySet()) {
                 boolean matched = false;
-                System.out.println(activityName);
 
                 for (String className : mClassNames) {
-                    System.out.println("    " + className);
                     if (!matched && activityName.matches(".*" + className + ".*")) {
                         matched = true;
                     }
@@ -96,7 +99,7 @@ public class UnusedActivityDetector extends Detector implements Detector.XmlScan
 
     @Override
     public boolean appliesTo(@NonNull Context context, @NonNull File file) {
-        return true; // TODO: XML -> true // generated -> false
+        return file.getName().equals(ANDROID_MANIFEST_XML);
     }
 
     @Override
