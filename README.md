@@ -40,3 +40,4 @@ https://github.com/ken5scal/UnusedActivityLint/issues
 * https://github.com/googlesamples/android-custom-lint-rules
 * https://realm.io/news/360andev-matthew-compton-linty-fresh-java-android/
 * https://android.googlesource.com/platform/tools/base/+/master/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks
+* https://github.com/adorilson/android-lint-checks
