@@ -35,3 +35,8 @@ Support
 If you've found an error, suggestion, recommendation, please file an issue:
 https://github.com/ken5scal/UnusedActivityLint/issues
 
+##### References
+* https://developer.android.com/studio/write/lint.html
+* https://github.com/googlesamples/android-custom-lint-rules
+* https://realm.io/news/360andev-matthew-compton-linty-fresh-java-android/
+* https://android.googlesource.com/platform/tools/base/+/master/lint/libs/lint-checks/src/main/java/com/android/tools/lint/checks
