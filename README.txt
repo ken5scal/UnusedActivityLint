@@ -1,22 +1,37 @@
-/demo:781 $ cp customlint.jar ~/.android/lint/customlint.jar 
-/demo:782 $ lint --show MyId
-MyId
-----
-Summary: My summary of the issue
+# Getting Started
 
-Priority: 6 / 10
-Severity: Warning
-Category: Correctness
+============
 
-My longer explanation of the issue
+##### Fetch code
+```
+git clone https://github.com/ken5scal/UnusedActivityLint.git
+cd android-custom-lint-rules
+```
 
+##### Build the validator
 
-/demo:783 $ lint --check MyId /demo/Demo
-/demo/Demo does not exist.
-/demo:784 $ lint --check MyId /demo/workspace/Demo
+`./gradlew build`
 
-Scanning Demo: ...............
-res/layout/sample_my_custom_view.xml:20: Warning: Missing required attribute 'exampleString' [MyId]
-    <com.google.io.demo.MyCustomView
-    ^
-0 errors, 1 warnings
+##### Copy to the lint directory
+
+`cp ./whatever_your_workind_dir/android-custom-lint-rules.jar ~/.android/lint/`
+
+##### Verify whether the issues are registered with lint
+
+`lint --show UnusedActivityLint`
+
+##### Run lint
+
+`./gradlew lint`
+
+> Note: If you can't run `lint` directly, you may want to include android tools `PATH` in your
+ `~/.bash_profile`.
+> (i.e. `PATH=$PATH:~/Library/Android/sdk/tools`)
+>
+> Then run `source ~/.bash_profile`.
+
+Support
+-------
+If you've found an error, suggestion, recommendation, please file an issue:
+https://github.com/ken5scal/UnusedActivityLint/issues
+
