@@ -1,6 +1,6 @@
 package googleio.demo;
 
-public class MyDetectorTest {
+public class UnusedComponentsDetectorTest {
    // When version 1.3 of the Android Gradle plugin is released,
    // the lint unit testing infrastructure has been pulled out of
    // the lint implementation and into a separate library that lint
